@@ -3,3 +3,26 @@
 	box-sizing: border-box;
 	padding: 0;
 }
+header {
+	background: #ccffff;
+	text-align: center;
+}
+main {
+	background: #ccffff;
+}
+#menu {
+	background: #00ffff;
+	margin-left: 5%;
+	margin-right: 5%;
+}
+#menu button {
+	position: relative;
+	Padding: 20px;
+	margin: 5px 0 5px 5px;
+}
+#gui {
+	background: #80bfff;
+	height: 80%;
+	margin: 1% 5% 1% 5%;
+	position: relative;
+}
