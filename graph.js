@@ -70,6 +70,7 @@ class Graph {
         return eds
     }
 
+    // log writes a string-representation of the graph to the console.
     log() {
         let eds = this.getDistinctEdges()
         for (let f in eds) {
