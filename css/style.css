@@ -26,3 +26,9 @@ main {
 	margin: 1% 5% 1% 5%;
 	position: relative;
 }
+#gui img {
+    position: absolute;   
+}
+#gui p {
+	position: absolute;
+}
