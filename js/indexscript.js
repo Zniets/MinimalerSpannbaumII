@@ -68,18 +68,35 @@ Elegui.addEventListener('mouseup',function() {
 	isDown = false;
 	if (tool == 1) {
 		console.log("tool 1 used");
-		var img = $('<img id="Knoten'+curID+'">');
-		img.css('top', offset[1] - 25);
-		img.css('left', offset[0] - 25);
-		img.attr('width', 50);
-		img.attr('height', 50);
-		img.attr('src', './img/Knoten.png');
-		img.appendTo('#gui');
+		let KnotenID = "Knoten"+curID;
+		var img = document.getElementById('gui').appendChild(
+			document.createElement('img'));
+		img.setAttribute("id",KnotenID);
+		img.style.top = offset[1] - 25;
+		img.style.left = offset[0] -25;
+		img.width = 50;
+		img.height = 50;
+		img.src = './img/Knoten.png';
+		//--vorher mit JQuery:
+		//img.css('top', offset[1] - 25);
+		//img.css('left', offset[0] - 25);
+		//img.attr('width', 50);
+		//img.attr('height', 50);
+		//img.attr('src', './img/Knoten.png');
+		//img.appendTo('#gui');
 		
-		var p = $('<p id="KnotenB'+curID+'">'+alphabet[curID]+'</p>');
-		p.css('top', offset[1] - 11);
-		p.css('left', offset[0] - 3);
-		p.appendTo('#gui');
+		let KnotenBID = "KnotenB"+curID;
+		var p = document.getElementById('gui').appendChild(
+			document.createElement('p'));
+		p.setAttribute("id",KnotenBID);
+		p.style.top = offset[1] - 11;
+		p.style.left = offset[0] - 3;
+		p.innerText = alphabet[curID];
+		//--vorher mit JQuery:
+		//var p = $('<p id="KnotenB'+curID+'">'+alphabet[curID]+'</p>');
+		//p.css('top', offset[1] - 11);
+		//p.css('left', offset[0] - 3);
+		//p.appendTo('#gui');
 		
 		KnotenArray[curID] = new Array(offset[0] - 25, offset[1] - 25);
 		
