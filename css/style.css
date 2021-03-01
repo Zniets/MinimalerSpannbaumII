@@ -33,5 +33,7 @@ main {
 	position: absolute;
 }
 #gui canvas {
+}
+#gui input {
 	position: absolute;
 }

@@ -7,7 +7,8 @@ var tool = 0;
 	// 5 Kante löschen
 
 var curID = 0;
-alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+var curKID = 0;
+var alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
 var KnotenArray = new Array();
 var KantenArray = new Array();
@@ -18,9 +19,14 @@ var isDown = false;
 
 var objUmouse = null;
 var lastselobj = null;
+var exsKante = false;
+
+var result = 0;
 
 var canvas = document.getElementById('gui').appendChild(
 	document.createElement('canvas'));
+canvas.height = document.getElementById('gui').clientHeight;
+canvas.width = document.getElementById('gui').clientWidth;
 var context = canvas.getContext('2d');
 
 var Elegui = document.getElementById('gui')
@@ -61,42 +67,36 @@ Elegui.addEventListener('mousedown',function(e) {
 			} else {
 				//KantenArray [Name(ab),ax,ay,bx,by]
 				if(KantenArray.length == 0) {
+					drawline(lastselobj, objUmouse);
+					
+					let lastselobjID = "Knoten" + lastselobj;
+					document.getElementById(lastselobjID).src = './img/Knoten.png';
+					lastselobj = null;
+					objUmouse = null;
+				} else {
 					let lastselobjID = "Knoten" + lastselobj;
 					let objUmouseID = "Knoten" + objUmouse;
-					var KnotenA = document.getElementById(lastselobjID);
-					var KnotenB = document.getElementById(objUmouseID);
 					
-					var KnotenAx = Number(KnotenA.style.left.split("px")[0]);
-					var KnotenAy = Number(KnotenA.style.top.split("px")[0]);
-					var KnotenBx = Number(KnotenB.style.left.split("px")[0]);
-					var KnotenBy = Number(KnotenB.style.top.split("px")[0]);
-					
-					if (lastselobjID < objUmouse) {
+					if (lastselobj < objUmouse) {
 						var KantenID = "K" + lastselobj + objUmouse;
 					} else {
 						var KantenID = "K" + objUmouse + lastselobj;
 					}
 					
-					context.beginPath();
-					if (KnotenAy < KnotenBy) {
-						canvas.style.marginTop = KnotenAy + 25;
-						canvas.setAttribute("height",KnotenBy - KnotenAy);
-					} else {
-						canvas.style.marginTop = KnotenBy + 25;
-						canvas.setAttribute("height",KnotenAy - KnotenBy);
-					}
-					if (KnotenAx < KnotenBx) {
-						canvas.style.marginLeft = KnotenAx + 25;
-						canvas.setAttribute("width",KnotenBx - KnotenAx);
-					} else {
-						canvas.style.marginLeft = KnotenBx + 25;
-						canvas.setAttribute("width",KnotenAx - KnotenBx);
+					for(var i = 0; i < curKID; i++) {
+						if(KantenArray[i][0] == KantenID) {
+							exsKante = true;
+						}
 					}
 					
-					context.moveTo(0,0);
-					context.lineTo(canvas.getAttribute("width"),canvas.getAttribute("height"));
-					context.stroke();
+					if (exsKante == false) {
+						drawline(lastselobj, objUmouse);
+					} else {
+						console.log("zu zeichnende Kante exsistiert schon.");
+						exsKante = false;
+					}
 					
+					lastselobjID = "Knoten" + lastselobj;
 					document.getElementById(lastselobjID).src = './img/Knoten.png';
 					lastselobj = null;
 					objUmouse = null;
@@ -168,7 +168,76 @@ document.addEventListener('mousemove',function(event) {
 }, true);
 
 //Funktion zur Erstellung der Kanten
+function drawline(selKnotenA, selKnotenB) {
+	let lastselobjID = "Knoten" + lastselobj;
+	let objUmouseID = "Knoten" + objUmouse;
+	
+	if (lastselobj < objUmouse) {
+		var KantenID = "K" + lastselobj + objUmouse;
+		var KnotenA = document.getElementById(lastselobjID);
+		var KnotenB = document.getElementById(objUmouseID);
+	} else {
+		var KantenID = "K" + objUmouse + lastselobj;
+		var KnotenB = document.getElementById(lastselobjID);
+		var KnotenA = document.getElementById(objUmouseID);
+	}
+	
+	var KnotenAx = Number(KnotenA.style.left.split("px")[0]);
+	var KnotenAy = Number(KnotenA.style.top.split("px")[0]);
+	var KnotenBx = Number(KnotenB.style.left.split("px")[0]);
+	var KnotenBy = Number(KnotenB.style.top.split("px")[0]);
+	
+	var ABy = false;
+	var ABx = false;
+	
+	if (KnotenAy > KnotenBy) {
+		ABy = true;
+	}
+	if (KnotenAx > KnotenBx) {
+		ABx = true;
+	}
+	
+	context.beginPath();
+	context.moveTo(KnotenAx+25, KnotenAy+25);
+	context.lineTo(KnotenBx+25, KnotenBy+25);
+	context.stroke();
+	
+	KantenArray[curKID] = new Array(KantenID, KnotenAx, KnotenAy, KnotenBx, KnotenBy);
+	
+	let KantenGID = "KantenG"+curKID;
+	var input = document.getElementById('gui').appendChild(
+			document.createElement('input'));
+	input.setAttribute("type","text");
+	input.setAttribute("id",KantenGID);
+	input.setAttribute("size","5");
+	if(ABy) {
+		input.style.top = KnotenBy + (KnotenAy - KnotenBy)/2;
+	} else {
+		input.style.top = KnotenAy + (KnotenBy - KnotenAy)/2;
+	}
+	if(ABx) {
+		input.style.left = KnotenBx + (KnotenAx - KnotenBx)/2;
+	} else {
+		input.style.left = KnotenAx + (KnotenBx - KnotenAx)/2;
+	}
+	
+	curKID++;
+}
 
+//Funktion zum berechnen
+
+function berechnen() {
+	var berGraph = new Graph();
+	for(var i = 0; i < curKID; i++) {
+		let Edge = new Array();
+		Edge = KantenArray[i][0].split('');
+		berGraph.setEdge(alphabet[Edge[1]], alphabet[Edge[2]], Number(document.getElementById(("KantenG"+i)).value));
+	}
+	result = berGraph.prim("a");
+	console.log(result);
+	result = berGraph.prim("a").log();
+	result = berGraph.prim("a").getEdges();
+}
 
 //Funktionen für Knöpfe im menu
 function setCreateKnoten() {
