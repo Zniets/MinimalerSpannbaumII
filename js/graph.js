@@ -50,6 +50,31 @@ class Graph {
         this.edges[to][from] = weight
     }
 
+    // removeEdge removes the the edge between "from" and "to"
+    removeEdge(from, to) {
+        if (!this.hasNode(from)) {
+            return
+        }
+        if (!this.hasNode(to)) {
+            return
+        }
+        if (this.edges[from][to] == undefined) {
+            return
+        }
+        delete this.edges[from][to]
+        delete this.edges[to][from]
+    }
+
+    removeNode(node) {
+        if (!this.hasNode(node)) {
+            return
+        }
+        this.getEdges(node).forEach((ed) => {
+            this.removeEdge(node, ed.to)
+        })
+        delete this.edges[node]
+    }
+
     // privat
     // getDistinctEdges returns all distinct edges from the graph.
     // 2 edges are considered equal, if they contain the same start/end-nodes,
