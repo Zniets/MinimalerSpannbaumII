@@ -10,36 +10,18 @@ var curID = 0;
 alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
 var KnotenArray = new Array();
+var KantenArray = new Array();
 
 var mousePosition = [0,0];
 var offset = [0,0];
 var isDown = false;
 
 var objUmouse = null;
+var lastselobj = null;
 
-//$(document).ready(function() { 
-//	
-//	$("#gui").click(function(e) {
-//		
-//		console.log("used tool ",tool);
-//		
-//		if(tool == 1) {
-//			e.preventDefault();
-//			var x = e.pageX - this.offsetLeft - 25;
-//			var y = e.pageY - this.offsetTop - 25;
-//			var img = $('<img id="Kante'+curID+'">');
-//			img.css('top', y);
-//			img.css('left', x);
-//			img.attr('width', 50);
-//			img.attr('height', 50);
-//			img.attr('src', './img/Knoten.png');
-//			img.appendTo('#gui');
-//			
-//			curID++;
-//		}
-//	})
-//	
-//});
+var canvas = document.getElementById('gui').appendChild(
+	document.createElement('canvas'));
+var context = canvas.getContext('2d');
 
 var Elegui = document.getElementById('gui')
 Elegui.addEventListener('mousedown',function(e) {
@@ -61,6 +43,71 @@ Elegui.addEventListener('mousedown',function(e) {
 			}
 		}
 	}
+	if (tool == 4) {
+		console.log("tool 4 used");
+		for(var i = 0; i < curID; i++) {
+			let KAx = KnotenArray[i][0];
+			let KAy = KnotenArray[i][1];
+			if(offset[0] >= KAx && KAx >= offset[0] - 50 && offset[1] >= KAy && KAy >= offset[1] - 50) {
+				objUmouse = i;
+			}
+		}
+		if(objUmouse != null) {
+			if(lastselobj == null) {
+				let objUmouseID = "Knoten" + objUmouse;
+				document.getElementById(objUmouseID).src = './img/selKnoten.png';
+				lastselobj = objUmouse;
+				objUmouse = null;
+			} else {
+				//KantenArray [Name(ab),ax,ay,bx,by]
+				if(KantenArray.length == 0) {
+					let lastselobjID = "Knoten" + lastselobj;
+					let objUmouseID = "Knoten" + objUmouse;
+					var KnotenA = document.getElementById(lastselobjID);
+					var KnotenB = document.getElementById(objUmouseID);
+					
+					var KnotenAx = Number(KnotenA.style.left.split("px")[0]);
+					var KnotenAy = Number(KnotenA.style.top.split("px")[0]);
+					var KnotenBx = Number(KnotenB.style.left.split("px")[0]);
+					var KnotenBy = Number(KnotenB.style.top.split("px")[0]);
+					
+					if (lastselobjID < objUmouse) {
+						var KantenID = "K" + lastselobj + objUmouse;
+					} else {
+						var KantenID = "K" + objUmouse + lastselobj;
+					}
+					
+					context.beginPath();
+					if (KnotenAy < KnotenBy) {
+						canvas.style.marginTop = KnotenAy + 25;
+						canvas.setAttribute("height",KnotenBy - KnotenAy);
+					} else {
+						canvas.style.marginTop = KnotenBy + 25;
+						canvas.setAttribute("height",KnotenAy - KnotenBy);
+					}
+					if (KnotenAx < KnotenBx) {
+						canvas.style.marginLeft = KnotenAx + 25;
+						canvas.setAttribute("width",KnotenBx - KnotenAx);
+					} else {
+						canvas.style.marginLeft = KnotenBx + 25;
+						canvas.setAttribute("width",KnotenAx - KnotenBx);
+					}
+					
+					context.moveTo(0,0);
+					context.lineTo(canvas.getAttribute("width"),canvas.getAttribute("height"));
+					context.stroke();
+					
+					document.getElementById(lastselobjID).src = './img/Knoten.png';
+					lastselobj = null;
+					objUmouse = null;
+				}
+			}
+		} else {
+			let lastselobjID = "Knoten" + lastselobj;
+			document.getElementById(lastselobjID).src = './img/Knoten.png';
+			lastselobj = null;
+		}
+	}
 	
 }, true);
 
@@ -77,13 +124,6 @@ Elegui.addEventListener('mouseup',function() {
 		img.width = 50;
 		img.height = 50;
 		img.src = './img/Knoten.png';
-		//--vorher mit JQuery:
-		//img.css('top', offset[1] - 25);
-		//img.css('left', offset[0] - 25);
-		//img.attr('width', 50);
-		//img.attr('height', 50);
-		//img.attr('src', './img/Knoten.png');
-		//img.appendTo('#gui');
 		
 		let KnotenBID = "KnotenB"+curID;
 		var p = document.getElementById('gui').appendChild(
@@ -92,11 +132,6 @@ Elegui.addEventListener('mouseup',function() {
 		p.style.top = offset[1] - 11;
 		p.style.left = offset[0] - 3;
 		p.innerText = alphabet[curID];
-		//--vorher mit JQuery:
-		//var p = $('<p id="KnotenB'+curID+'">'+alphabet[curID]+'</p>');
-		//p.css('top', offset[1] - 11);
-		//p.css('left', offset[0] - 3);
-		//p.appendTo('#gui');
 		
 		KnotenArray[curID] = new Array(offset[0] - 25, offset[1] - 25);
 		
@@ -131,6 +166,9 @@ document.addEventListener('mousemove',function(event) {
 	
 	}
 }, true);
+
+//Funktion zur Erstellung der Kanten
+
 
 //Funktionen für Knöpfe im menu
 function setCreateKnoten() {
