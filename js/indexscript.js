@@ -235,8 +235,22 @@ function berechnen() {
 	}
 	result = berGraph.prim("a");
 	console.log(result);
-	result = berGraph.prim("a").log();
-	result = berGraph.prim("a").getEdges();
+	berGraph.prim("a").log();
+	
+	context.strokeStyle = 'Yellow';
+	for(var i = 0; i < curKID - 1; i++) {
+		for(var t = 0; t < result.getEdges(alphabet[i]).length; t++) {
+			var Edges = result.getEdges(alphabet[i])[t];
+			let Efrom = alphabet.indexOf(Edges["from"]);
+			let Eto = alphabet.indexOf(Edges["to"]);
+			console.log(Edges);
+			console.log(Efrom + " " + Eto);
+			context.beginPath();
+			context.moveTo(KnotenArray[Efrom][0] + 25,KnotenArray[Efrom][1] + 25);
+			context.lineTo(KnotenArray[Eto][0] + 25,KnotenArray[Eto][1] + 25);
+			context.stroke();
+		}
+	}
 }
 
 //Funktionen für Knöpfe im menu
