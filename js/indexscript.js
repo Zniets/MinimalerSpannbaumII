@@ -257,29 +257,52 @@ function drawline() {
 //Funktion zum berechnen
 function berechnen() {
 	var berGraph = new Graph();
+	
+	//Aufteilen jeder KantenID zu ihren Knoten-Buchstaben und übergeben der Buchstaben und Gewichtungen an den Graph
 	for(var i = 0; i < curKID; i++) {
 		let Edge = new Array();
 		Edge = KantenArray[i][0].split('');
 		berGraph.setEdge(alphabet[Edge[1]], alphabet[Edge[2]], Number(document.getElementById(("KantenG"+i)).value));
 	}
-	result = berGraph.prim("a");
+	
+	//übergabe der Start-Kante und speichern des Graph's in der Variable 'result'
+	result = berGraph.prim("a").getDistinctEdges();
+	//Ausgabe des Ergebnisses in der Console
 	console.log(result);
 	berGraph.prim("a").log();
 	
+	//Änderung der Farbe von 'context' zu Gelb
 	context.strokeStyle = 'Yellow';
-	for(var i = 0; i < curKID; i++) {
-		for(var t = 0; t < result.getEdges(alphabet[i]).length; t++) {
-			var Edges = result.getEdges(alphabet[i])[t];
-			let Efrom = alphabet.indexOf(Edges["from"]);
-			let Eto = alphabet.indexOf(Edges["to"]);
-			console.log(Edges);
-			console.log(Efrom + " " + Eto);
-			context.beginPath();
-			context.moveTo(KnotenArray[Efrom][0] + 25,KnotenArray[Efrom][1] + 25);
-			context.lineTo(KnotenArray[Eto][0] + 25,KnotenArray[Eto][1] + 25);
-			context.stroke();
+	
+	//Durchgehen jeder Kante
+	for(var i = 0; i < curID; i++) {
+		if(result[alphabet[i]] != undefined) {
+			for(var t = 0; t < curID; t++) {
+				if(result[alphabet[i]][alphabet[t]] != undefined) {
+					context.beginPath();
+					context.moveTo(KnotenArray[i][0] + 25,KnotenArray[i][1] + 25);
+					context.lineTo(KnotenArray[t][0] + 25,KnotenArray[t][1] + 25);
+					context.stroke();
+					console.log("Verbinde " + alphabet[i] + " mit " + alphabet[t]);
+				}
+			}
 		}
 	}
+}
+
+//Erkennung des Knotens unter der Maus
+function detectNode() {
+	console.log("detectNode");
+	for(var i = 0; i < curID; i++) {
+		let KAx = KnotenArray[i][0];
+		let KAy = KnotenArray[i][1];
+		if(offset[0] >= KAx && KAx >= offset[0] - 50 && offset[1] >= KAy && KAy >= offset[1] - 50) {
+			objUmouse = i;
+			console.log(i);
+			return true;
+		}
+	}
+	return false;
 }
 
 //Erkennung des Knotens unter der Maus
