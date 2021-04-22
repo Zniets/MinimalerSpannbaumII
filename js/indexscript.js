@@ -267,7 +267,7 @@ function berechnen() {
 	berGraph.prim("a").log();
 	
 	context.strokeStyle = 'Yellow';
-	for(var i = 0; i < curKID - 1; i++) {
+	for(var i = 0; i < curKID; i++) {
 		for(var t = 0; t < result.getEdges(alphabet[i]).length; t++) {
 			var Edges = result.getEdges(alphabet[i])[t];
 			let Efrom = alphabet.indexOf(Edges["from"]);
