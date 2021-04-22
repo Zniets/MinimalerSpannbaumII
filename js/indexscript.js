@@ -1,3 +1,4 @@
+
 var tool = 0;
 	// 0 leer
 	// 1 Knoten erstellen
@@ -23,13 +24,14 @@ var exsKante = false;
 
 var result = 0;
 
+var Elegui = document.getElementById('gui');
+
 var canvas = document.getElementById('gui').appendChild(
 	document.createElement('canvas'));
 canvas.height = document.getElementById('gui').clientHeight;
 canvas.width = document.getElementById('gui').clientWidth;
 var context = canvas.getContext('2d');
 
-var Elegui = document.getElementById('gui')
 Elegui.addEventListener('mousedown',function(e) {
 	isDown = true;
 	offset = [
@@ -39,103 +41,28 @@ Elegui.addEventListener('mousedown',function(e) {
 	
 	console.log("offset:",offset);
 	
-	if (tool == 2) {
-		console.log("tool 2 used");
-		for(var i = 0; i < curID; i++) {
-			let KAx = KnotenArray[i][0];
-			let KAy = KnotenArray[i][1];
-			if(offset[0] >= KAx && KAx >= offset[0] - 50 && offset[1] >= KAy && KAy >= offset[1] - 50) {
-				objUmouse = i;
-			}
-		}
-	}
+	//Erkenne Knoten unter Maus
+	detectNode();
+	
+	//Kante erstellen
 	if (tool == 4) {
-		console.log("tool 4 used");
-		for(var i = 0; i < curID; i++) {
-			let KAx = KnotenArray[i][0];
-			let KAy = KnotenArray[i][1];
-			if(offset[0] >= KAx && KAx >= offset[0] - 50 && offset[1] >= KAy && KAy >= offset[1] - 50) {
-				objUmouse = i;
-			}
-		}
-		if(objUmouse != null) {
-			if(lastselobj == null) {
-				let objUmouseID = "Knoten" + objUmouse;
-				document.getElementById(objUmouseID).src = './img/selKnoten.png';
-				lastselobj = objUmouse;
-				objUmouse = null;
-			} else {
-				//KantenArray [Name(ab),ax,ay,bx,by]
-				if(KantenArray.length == 0) {
-					drawline(lastselobj, objUmouse);
-					
-					let lastselobjID = "Knoten" + lastselobj;
-					document.getElementById(lastselobjID).src = './img/Knoten.png';
-					lastselobj = null;
-					objUmouse = null;
-				} else {
-					let lastselobjID = "Knoten" + lastselobj;
-					let objUmouseID = "Knoten" + objUmouse;
-					
-					if (lastselobj < objUmouse) {
-						var KantenID = "K" + lastselobj + objUmouse;
-					} else {
-						var KantenID = "K" + objUmouse + lastselobj;
-					}
-					
-					for(var i = 0; i < curKID; i++) {
-						if(KantenArray[i][0] == KantenID) {
-							exsKante = true;
-						}
-					}
-					
-					if (exsKante == false) {
-						drawline(lastselobj, objUmouse);
-					} else {
-						console.log("zu zeichnende Kante exsistiert schon.");
-						exsKante = false;
-					}
-					
-					lastselobjID = "Knoten" + lastselobj;
-					document.getElementById(lastselobjID).src = './img/Knoten.png';
-					lastselobj = null;
-					objUmouse = null;
-				}
-			}
-		} else {
-			let lastselobjID = "Knoten" + lastselobj;
-			document.getElementById(lastselobjID).src = './img/Knoten.png';
-			lastselobj = null;
-		}
+		console.log("tool 4(Kante erstellen) used");
+		markNode();
 	}
 	
 }, true);
 
-Elegui.addEventListener('mouseup',function() {
+Elegui.addEventListener('mouseup',function(e) {
 	isDown = false;
-	if (tool == 1) {
-		console.log("tool 1 used");
-		let KnotenID = "Knoten"+curID;
-		var img = document.getElementById('gui').appendChild(
-			document.createElement('img'));
-		img.setAttribute("id",KnotenID);
-		img.style.top = offset[1] - 25;
-		img.style.left = offset[0] -25;
-		img.width = 50;
-		img.height = 50;
-		img.src = './img/Knoten.png';
+	if (tool == 1 && e.button == 0) {
 		
-		let KnotenBID = "KnotenB"+curID;
-		var p = document.getElementById('gui').appendChild(
-			document.createElement('p'));
-		p.setAttribute("id",KnotenBID);
-		p.style.top = offset[1] - 11;
-		p.style.left = offset[0] - 3;
-		p.innerText = alphabet[curID];
+		//Falls kein Knoten unter der Maus ist erstelle neuen Knoten
+		if(detectNode() == false) {
+			createNode();
+		} else {
+			console.warn("Knoten schon vorhanden. Keinen neuen Knoten erstellt.");
+		}
 		
-		KnotenArray[curID] = new Array(offset[0] - 25, offset[1] - 25);
-		
-		curID++;
 		objUmouse = null;
 	} else if (tool == 2) {
 		objUmouse = null;
@@ -145,7 +72,7 @@ Elegui.addEventListener('mouseup',function() {
 }, true);
 
 document.addEventListener('mousemove',function(event) {
-	event.preventDefault();
+	event.preventDefault(); //verhindert das markieren der Objekte
 	if (isDown) {
 		mousePosition = [
 			event.clientX - Elegui.offsetLeft,
@@ -167,11 +94,105 @@ document.addEventListener('mousemove',function(event) {
 	}
 }, true);
 
+//Funktion zur Erstellung der Knoten
+function createNode() {
+	console.log("tool 1 used");
+	
+	// eindeutiger Name für den Knoten
+	let KnotenID = "Knoten"+curID;
+	
+	//Erstellt das Bild vom Knoten
+	var img = document.getElementById('gui').appendChild(
+		document.createElement('img'));
+	img.setAttribute("id",KnotenID);
+	img.style.top = offset[1] - 25;
+	img.style.left = offset[0] -25;
+	img.width = "50";
+	img.height = "50";
+	img.src = './img/Knoten.png';
+	img.setAttribute("alt", KnotenID);
+	
+	//Erstellt den Buchstaben im Knoten
+	let KnotenBID = "KnotenB"+curID;
+	var p = document.getElementById('gui').appendChild(
+		document.createElement('p'));
+	p.setAttribute("id",KnotenBID);
+	p.style.top = offset[1] - 11;
+	p.style.left = offset[0] - 3;
+	p.innerText = alphabet[curID];
+	
+	//eintragen des Knotens im KnotenArray
+	KnotenArray[curID] = new Array(offset[0] - 25, offset[1] - 25);
+	
+	//setzen der nächsten ID
+	curID++;
+}
+
+//Funktion für die Markierung beim klicken der Knoten
+function markNode() {
+	if(objUmouse != null) {
+		if(lastselobj == null) {
+			let objUmouseID = "Knoten" + objUmouse;
+			document.getElementById(objUmouseID).src = './img/selKnoten.png';
+			lastselobj = objUmouse;
+			objUmouse = null;
+			console.log("2");
+			return false
+		} else {
+			//KantenArray [Name(ab),ax,ay,bx,by]
+			let lastselobjID = "Knoten" + lastselobj;
+			let objUmouseID = "Knoten" + objUmouse;
+			
+			if (lastselobj < objUmouse) {
+				var KantenID = "K" + lastselobj + objUmouse;
+			} else {
+				var KantenID = "K" + objUmouse + lastselobj;
+			}
+			
+			//Wenn der Array für die Kanten leer ist
+			if(KantenArray.length != 0) {
+				//Prüfung ob es die kante schon gibt
+				for(var i = 0; i < curKID; i++) {
+					if(KantenArray[i][0] == KantenID) {
+						//Kante exsistiert
+						console.log("zu zeichnende Kante exsistiert schon.");
+					} else {
+						//Kante ist neu und wird gezeichnet
+						drawline();
+					}
+				}
+			} else {
+				//Wenn der Array leer ist wird direkt die kante gezeichnet
+				drawline();
+			}
+			
+			unmarkLastSelObj();
+			return false;
+		}
+	} else if(lastselobj != null){
+		//falls man nach der ersten Markierung keinen Knoten auswählt
+		//markierter Knoten wird zurückgesetzt
+		unmarkLastSelObj();
+		return false;
+	}
+}
+
+//Funktion die das Bild des "lastselobj" zum ursprünglichen Bild ändert
+function unmarkLastSelObj() {
+	let lastselobjID = "Knoten" + lastselobj;
+	document.getElementById(lastselobjID).src = './img/Knoten.png';
+	lastselobj = null;
+	objUmouse = null;
+}
+
+
 //Funktion zur Erstellung der Kanten
-function drawline(selKnotenA, selKnotenB) {
+function drawline() {
+	//Erstellen der KnotenIDs
 	let lastselobjID = "Knoten" + lastselobj;
 	let objUmouseID = "Knoten" + objUmouse;
 	
+	//Sortieren der beiden Knoten nach ID aufsteigend und Festlegen von Knoten A und B
 	if (lastselobj < objUmouse) {
 		var KantenID = "K" + lastselobj + objUmouse;
 		var KnotenA = document.getElementById(lastselobjID);
@@ -182,11 +203,13 @@ function drawline(selKnotenA, selKnotenB) {
 		var KnotenA = document.getElementById(objUmouseID);
 	}
 	
+	//Knoten-Koordinaten in Variablen übergeben
 	var KnotenAx = Number(KnotenA.style.left.split("px")[0]);
 	var KnotenAy = Number(KnotenA.style.top.split("px")[0]);
 	var KnotenBx = Number(KnotenB.style.left.split("px")[0]);
 	var KnotenBy = Number(KnotenB.style.top.split("px")[0]);
 	
+	//Festlegen welche Koordinaten wo liegen um die Kante richtig zu positionieren
 	var ABy = false;
 	var ABx = false;
 	
@@ -197,19 +220,24 @@ function drawline(selKnotenA, selKnotenB) {
 		ABx = true;
 	}
 	
+	//Zeichnen der Kante
 	context.beginPath();
 	context.moveTo(KnotenAx+25, KnotenAy+25);
 	context.lineTo(KnotenBx+25, KnotenBy+25);
 	context.stroke();
 	
+	//Kante wird in den Array eingetragen
 	KantenArray[curKID] = new Array(KantenID, KnotenAx, KnotenAy, KnotenBx, KnotenBy);
 	
+	//der Kante wird ein Input-Feld angefügt für die Gewichtung
 	let KantenGID = "KantenG"+curKID;
 	var input = document.getElementById('gui').appendChild(
 			document.createElement('input'));
 	input.setAttribute("type","text");
 	input.setAttribute("id",KantenGID);
 	input.setAttribute("size","5");
+	
+	//Feststellung der Mitte der Kante für das Input-Feld
 	if(ABy) {
 		input.style.top = KnotenBy + (KnotenAy - KnotenBy)/2;
 	} else {
@@ -221,11 +249,12 @@ function drawline(selKnotenA, selKnotenB) {
 		input.style.left = KnotenAx + (KnotenBx - KnotenAx)/2;
 	}
 	
+	//setzen der nächsten Kanten-ID
 	curKID++;
 }
 
-//Funktion zum berechnen
 
+//Funktion zum berechnen
 function berechnen() {
 	var berGraph = new Graph();
 	for(var i = 0; i < curKID; i++) {
@@ -251,6 +280,21 @@ function berechnen() {
 			context.stroke();
 		}
 	}
+}
+
+//Erkennung des Knotens unter der Maus
+function detectNode() {
+	console.log("detectNode");
+	for(var i = 0; i < curID; i++) {
+		let KAx = KnotenArray[i][0];
+		let KAy = KnotenArray[i][1];
+		if(offset[0] >= KAx && KAx >= offset[0] - 50 && offset[1] >= KAy && KAy >= offset[1] - 50) {
+			objUmouse = i;
+			console.log(i);
+			return true;
+		}
+	}
+	return false;
 }
 
 //Funktionen für Knöpfe im menu
