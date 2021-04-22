@@ -32,3 +32,8 @@ main {
 #gui p {
 	position: absolute;
 }
+#gui canvas {
+}
+#gui input {
+	position: absolute;
+}
